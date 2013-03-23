@@ -22,7 +22,7 @@ io.sockets.on('connection', function (socket) {
 	socket.on('start', function (data) {
 		console.log('[DEBUG] Game started!');
 		setTimeout(function () {
-			socket.emit('location', {x: 100, y: 10});
+			socket.emit('location', {x: 10000, y: 10000});
 		}, 1000);
 	});
 
@@ -34,7 +34,6 @@ io.sockets.on('connection', function (socket) {
 		console.log('[DEBUG] Game lost!');
 		setTimeout(function () {
 			socket.emit('start', true);
-			socket.emit('location', {x: 100, y: 10});
 		}, 3000);
 	});
 
@@ -42,7 +41,6 @@ io.sockets.on('connection', function (socket) {
 		console.log('[DEBUG] Game won!');
 		setTimeout(function () {
 			socket.emit('start', true);
-			socket.emit('location', {x: 100, y: 10});
 		}, 3000);
 	});
 });
