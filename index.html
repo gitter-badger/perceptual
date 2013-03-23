@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>Zombie Run!</title>
+		<style>
+		body {
+		  margin: 0;
+		  padding: 0;
+		  background-color: black;
+		}
+		canvas {
+		  display: block;
+		  margin: 20px auto 0;
+		  border: 1px dashed #ccc;
+		 /* width: 800px; causes scaling
+		  height: 600px;*/
+		}
+		</style>
+		<script type="text/javascript">
+			var bgimage;
+			var bgmusic = new Array();
+			var sfmusic = new Array();
+			var canvas;
+			var context;
+			var overlays = new Array();
+			var interval, 
+				playerspeed = 1,
+				pawnspeed = 0.5;
+			var pawns = new Array();
+			var npawns = 10;
+			var play = {
+				x: 0,
+				y: 0
+			};
+			var delay = 5;
+
+			function pawn() {
+				this.x = 0;
+				this.y = 0;
+				this.nx = 0;
+				this.ny = 0;
+				this.hp = 3;
+				this.immune = false;
+				this.img = new Image();
+			}
+			
+			function getMousePos(canvas, evt) {
+				var rect = canvas.getBoundingClientRect();
+				return {
+					x: evt.clientX - rect.left,
+					y: evt.clientY - rect.top
+				};
+			}
+			
+			function waitforImg (img) {
+				//while (!img.complete);
+				return;
+			}
+			
+			function waitforMus (audio) {
+				//while (audio.readyState != 4);
+				return;
+			}
+			
+			function load () {
+				canvas = document.getElementById('canvas');
+				context = canvas.getContext('2d');
+				// Preload the large audio files
+				bgmusic[0] = new Audio();
+				bgmusic[0].src = "./data/sounds/night.ogg";
+				waitforMus(bgmusic[0]);
+				bgmusic[1] = new Audio();
+				bgmusic[1].src = "./data/sounds/music.ogg";
+				waitforMus(bgmusic[1]);
+				bgmusic[2] = new Audio();
+				bgmusic[2].src = "./data/sounds/win.ogg";
+				waitforMus(bgmusic[2]);
+				bgmusic[3] = new Audio();
+				bgmusic[3].src = "./data/sounds/zombies_death.ogg";
+				waitforMus(bgmusic[3]);
+				// Preload the large audio files
+				sfmusic[0] = new Audio();
+				sfmusic[0].src = "./data/sounds/growl.ogg";
+				sfmusic[0].loop = false;
+				waitforMus(sfmusic[0]);
+				sfmusic[1] = new Audio();
+				sfmusic[1].src = "./data/sounds/died.ogg";
+				sfmusic[1].loop = false;
+				waitforMus(sfmusic[1]);
+				sfmusic[2] = new Audio();
+				sfmusic[2].src = "./data/sounds/woohoo.ogg";
+				sfmusic[2].loop = false;
+				waitforMus(sfmusic[2]);
+				// Preload the large images
+				bgimage = new Image();
+				bgimage.src = './data/images/map.png';
+				waitforImg(bgimage);
+				overlays[0] = new Image();
+				overlays[0].src = "./data/images/loading.png";
+				waitforImg(overlays[0]);
+				overlays[1] = new Image();
+				overlays[1].src = "./data/images/death.png";
+				waitforImg(overlays[1]);
+				overlays[2] = new Image();
+				overlays[2].src = "./data/images/win.png";
+				waitforImg(overlays[2]);
+				// Start main screen
+				menuscreen();
+				// ctx.drawImage(sprites,srcX,srcY,srcW,srcH,destX,destY,destW,destH);
+			}
+			function menuscreen () {
+				// Start background music
+				bgmusic[1].pause(); // Music could already be playing
+				bgmusic[2].pause(); // Music could already be playing
+				bgmusic[3].pause(); // Music could already be playing
+				bgmusic[0].loop = true;
+				bgmusic[0].play();
+				// Load draw background
+				context.drawImage(bgimage, 0, 0);
+				// Load menu
+				context.drawImage(overlays[0], 0, 0);
+				// Set listening for mouse	
+				canvas.removeEventListener('click');				
+				canvas.addEventListener('click', gamescreen, false);				
+			}
+			function gamescreen () {
+				// Start background music
+				bgmusic[0].pause(); // Music could already be playing
+				bgmusic[2].pause(); // Music could already be playing
+				bgmusic[3].pause(); // Music could already be playing
+				bgmusic[1].loop = false;
+				bgmusic[1].play();		
+				// Load draw background
+				context.drawImage(bgimage, 0, 0);
+				// Setup pawns and give them a valid location
+				play.x = 50, play.y = 50; // Emulates start mouse click
+				pawns[0] = new pawn();
+				pawns[0].x = 50;
+				pawns[0].y = 50;
+				pawns[0].img.src = "./data/images/pawn0.png"; // Player pawn
+				for (var i = 1; i < npawns; i++) {
+					pawns[i] = new pawn;
+					pawns[i].x = (Math.random() * 1000) % 700 + 50;
+					pawns[i].y = (Math.random() * 1000) % 500 + 50;
+					pawns[i].nx = pawnspeed * ((Math.random() % 50 > 0.5) ? -1 : 1);
+					pawns[i].ny = pawnspeed * ((Math.random() % 50 > 0.5) ? -1 : 1);
+					pawns[i].img.src = "./data/images/pawn" + i +".png";
+					waitforImg(pawns[i].img);
+				}				
+				// Start game
+				interval = setInterval(move, 0);
+				// Set listening for mouse
+				canvas.removeEventListener('click', gamescreen, false);				
+				canvas.addEventListener('click', function(evt) {
+					var mousePos = getMousePos(canvas, evt);
+					play.x = mousePos.x - pawns[0].img.width / 2;
+					play.y = mousePos.y - pawns[0].img.width / 2;
+				}, false);
+			}
+			function winscreen () {
+				// Start background music
+				bgmusic[0].pause(); // Music could already be playing
+				bgmusic[1].pause(); // Music could already be playing
+				bgmusic[3].pause(); // Music could already be playing
+				bgmusic[2].loop = false;
+				bgmusic[2].play();		
+				// Load draw background
+				context.drawImage(bgimage, 0, 0);
+				// Load menu
+				context.drawImage(overlays[2], 0, 0);
+				// Set listening for mouse	
+				canvas.removeEventListener('click', gamescreen, false);				
+				canvas.addEventListener('click', gamescreen, false);				
+			}
+			function endscreen () {
+				// Start background music
+				bgmusic[0].pause(); // Music could already be playing
+				bgmusic[1].pause(); // Music could already be playing
+				bgmusic[2].pause(); // Music could already be playing
+				bgmusic[3].loop = false;
+				bgmusic[3].play();						
+				// Load draw background
+				context.drawImage(bgimage, 0, 0);
+				// Load menu
+				context.drawImage(overlays[1], 0, 0);
+				// Set listening for mouse	
+				canvas.removeEventListener('click', gamescreen, false);				
+				canvas.addEventListener('click', gamescreen, false);				
+			}
+			function move () {
+				// Load draw background
+				context.drawImage(bgimage, 0, 0);
+				var p, t;
+				// Move player one block down path
+				p = pawns[0];
+				if (p.x != play.x) {
+					if (p.x < play.x) {
+						p.x += playerspeed;
+					} else if (p.x > play.x) {
+						p.x -= playerspeed;
+					}
+				}
+				if (p.y != play.y) {
+					if (p.y < play.y) {
+						p.y += playerspeed;
+					} else if (p.y > play.y) {
+						p.y -= playerspeed;
+					}
+				}
+				
+				// Check of play has won
+				if (p.x > 725 && p.y > 525) {
+					sfmusic[2].play();
+					clearInterval(interval);
+					winscreen();
+					return;
+				}
+				//pawns[0].x = p.x; pawns[0].y = p.y;
+				context.drawImage(pawns[0].img, pawns[0].x, pawns[0].y);
+				
+				for (var i = 1; i < pawns.length; i++) {
+					t = pawns[i];
+					// Checks for collisions
+					var dist = Math.sqrt(Math.pow(p.x - t.x, 2) + Math.pow(p.y - t.y, 2));
+					if ((t.x <= p.x+25 && t.x >= p.x-25) && (t.y <= p.y+75 && t.y >= p.y-75)) {  // 75 for y perspective
+						// Players has died end game play interval and go to end screen
+						if (pawns[0].immune == false) {
+							sfmusic[1].play();
+							pawns[0].hp--;
+							if (pawns[0].hp > 0) {
+								pawns[0].immune = true;
+								setTimeout(function () { pawns[0].immune = false; }, 1000);
+							} else {
+								clearInterval(interval);
+								endscreen();
+								return;							
+							}
+						}
+						/*context.drawImage(Image(document.body.toDataURL("image/png")), 0, 0);
+						var img = canvas.toDataURL("image/png");
+						var image = document.createElement('img');
+						image.setAttribute('src', "" + img +"");
+						document.body.appendChild(image);*/
+					}
+
+					/* Checking if player in proxcimety */
+					if (dist <= 150) {
+						
+						if (sfmusic[0].paused) {
+							sfmusic[0].play();
+						}
+					
+						/* Chase Player */
+						if (t.x != p.x) {
+							if (t.x < p.x) t.x += pawnspeed;
+							else if (t.x > p.x) t.x -= pawnspeed;
+						}
+						if (t.y != p.y) {
+							if (t.y < p.y) t.y += pawnspeed;
+							else if (t.y > p.y) t.y -= pawnspeed;
+						}
+
+						/* Notice no bounds checking here as we are following
+						   player and player destination is only set by mouse
+						   which can only happen within bounds. */
+
+					} else { /* Player is too far or has evaded */
+						/* Path deviation */
+						if ((Math.random() * 10000) % 1000 + 1 == 523) {
+							t.nx = -t.nx; t.ny = -t.ny;
+						}
+
+						/* Bound Checking */
+						if (t.x <= 50 || t.x >= 800-50) {
+							t.nx = -t.nx;
+						}
+						if (t.y <= 50 || t.y >= 600-50) {
+							t.ny = -t.ny;
+						}
+
+						/* Walk to new location */
+						t.x += t.nx; t.y += t.ny;
+					}
+					//pawns[i].x = t.x; pawns[i].y = t.y;
+					//pawns[i].nx = t.nx; pawns[i].ny = t.ny;
+					context.drawImage(pawns[i].img, pawns[i].x, pawns[i].y);
+				}
+			}
+		</script>		
+	</head>
+	<body onload="load();">
+		<canvas id="canvas" width="800" height="600"></canvas>
+	</body>
+</html>
