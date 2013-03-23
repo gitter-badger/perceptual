@@ -19,6 +19,8 @@
 		</style>
 		<script src="/socket.io/socket.io.js"></script> <!-- socket.io -->
 		<script type="text/javascript">
+			var socket = io.connect('http://localhost:'+window.location.port);
+
 			var bgimage;
 			var bgmusic = new Array();
 			var sfmusic = new Array();
@@ -123,7 +125,11 @@
 				context.drawImage(overlays[0], 0, 0);
 				// Set listening for mouse	
 				canvas.removeEventListener('click');				
-				canvas.addEventListener('click', gamescreen, false);				
+				canvas.addEventListener('click', gamescreen, false);
+
+				socket.on('start', function (data) {
+					gamescreen();
+				});				
 			}
 			function gamescreen () {
 				// Start background music
@@ -151,6 +157,9 @@
 				}				
 				// Start game
 				interval = setInterval(move, 0);
+
+				socket.emit('start', true);
+
 				// Set listening for mouse
 				canvas.removeEventListener('click', gamescreen, false);				
 				canvas.addEventListener('click', function(evt) {
@@ -158,6 +167,14 @@
 					play.x = mousePos.x - pawns[0].img.width / 2;
 					play.y = mousePos.y - pawns[0].img.width / 2;
 				}, false);
+
+				/*
+				 * SOCKETS SENDNG LOCATION DATA
+				 */
+				socket.on('location', function (data) {
+					play.x = data.x - pawns[0].img.width / 2;
+					play.y = data.y - pawns[0].img.width / 2;
+				});
 			}
 			function winscreen () {
 				// Start background music
