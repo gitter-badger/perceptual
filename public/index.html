@@ -124,8 +124,8 @@
 				// Load menu
 				context.drawImage(overlays[0], 0, 0);
 				// Set listening for mouse	
-				canvas.removeEventListener('click');				
-				canvas.addEventListener('click', gamescreen, false);
+			//	canvas.removeEventListener('click');				
+			//	canvas.addEventListener('click', gamescreen, false);
 
 				socket.on('start', function (data) {
 					gamescreen();
@@ -161,12 +161,12 @@
 				socket.emit('start', true);
 
 				// Set listening for mouse
-				canvas.removeEventListener('click', gamescreen, false);				
-				canvas.addEventListener('click', function(evt) {
-					var mousePos = getMousePos(canvas, evt);
-					play.x = mousePos.x - pawns[0].img.width / 2;
-					play.y = mousePos.y - pawns[0].img.width / 2;
-				}, false);
+			//	canvas.removeEventListener('click', gamescreen, false);				
+			//	canvas.addEventListener('click', function(evt) {
+			//		var mousePos = getMousePos(canvas, evt);
+			//		play.x = mousePos.x - pawns[0].img.width / 2;
+			//		play.y = mousePos.y - pawns[0].img.width / 2;
+			//	}, false);
 
 				/*
 				 * SOCKETS SENDNG LOCATION DATA
@@ -188,8 +188,11 @@
 				// Load menu
 				context.drawImage(overlays[2], 0, 0);
 				// Set listening for mouse	
-				canvas.removeEventListener('click', gamescreen, false);				
-				canvas.addEventListener('click', gamescreen, false);				
+			//	canvas.removeEventListener('click', gamescreen, false);				
+			//	canvas.addEventListener('click', gamescreen, false);
+
+				socket.emit('win', true);
+				
 			}
 			function endscreen () {
 				// Start background music
@@ -203,8 +206,10 @@
 				// Load menu
 				context.drawImage(overlays[1], 0, 0);
 				// Set listening for mouse	
-				canvas.removeEventListener('click', gamescreen, false);				
-				canvas.addEventListener('click', gamescreen, false);				
+			//	canvas.removeEventListener('click', gamescreen, false);				
+			//	canvas.addEventListener('click', gamescreen, false);
+
+				socket.emit('loss', true);					
 			}
 			function move () {
 				// Load draw background

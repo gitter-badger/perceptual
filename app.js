@@ -29,5 +29,21 @@ io.sockets.on('connection', function (socket) {
 	setTimeout(function () {
 		socket.emit('start', true);
 	}, 3000);
+
+	socket.on('loss', function (data) {
+		console.log('[DEBUG] Game lost!');
+		setTimeout(function () {
+			socket.emit('start', true);
+			socket.emit('location', {x: 100, y: 10});
+		}, 3000);
+	});
+
+	socket.on('win', function (data) {
+		console.log('[DEBUG] Game won!');
+		setTimeout(function () {
+			socket.emit('start', true);
+			socket.emit('location', {x: 100, y: 10});
+		}, 3000);
+	});
 });
 
