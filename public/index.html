@@ -145,14 +145,14 @@
 				pawns[0] = new pawn();
 				pawns[0].x = 50;
 				pawns[0].y = 50;
-				pawns[0].img.src = "./data/images/pawn0.png"; // Player pawn
+				pawns[0].img.src = "./data/images/hipsterR.png"; // Player pawn, faces right initially
 				for (var i = 1; i < npawns; i++) {
 					pawns[i] = new pawn;
 					pawns[i].x = (Math.random() * 1000) % 700 + 50;
 					pawns[i].y = (Math.random() * 1000) % 500 + 50;
 					pawns[i].nx = pawnspeed * ((Math.random() % 50 > 0.5) ? -1 : 1);
 					pawns[i].ny = pawnspeed * ((Math.random() % 50 > 0.5) ? -1 : 1);
-					pawns[i].img.src = "./data/images/pawn" + i +".png";
+					pawns[i].img.src = "./data/images/zombieR0.png";
 					waitforImg(pawns[i].img);
 				}				
 				// Start game
