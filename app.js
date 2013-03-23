@@ -15,4 +15,10 @@ app.configure(function () {
 
 // create the server
 var server = http.createServer(app);
-server.listen(app.get('port'), app.get('host'));
+server.listen(3008);
+var io = require('socket.io').listen(server);
+
+io.sockets.on('connection', function (socket) {
+	
+});
+
