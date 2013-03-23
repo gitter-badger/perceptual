@@ -29,7 +29,7 @@
 			var overlays = new Array();
 			var interval, 
 				playerspeed = 1,
-				pawnspeed = 0.5;
+				pawnspeed = 0.1;
 			var pawns = new Array();
 			var npawns = 10;
 			var play = {
@@ -37,6 +37,8 @@
 				y: 0
 			};
 			var delay = 5;
+			var zDirections = [], // zombie directions
+			    hDirection = "right"; // hipster direction
 
 			function pawn() {
 				this.x = 0;
@@ -46,6 +48,7 @@
 				this.hp = 3;
 				this.immune = false;
 				this.img = new Image();
+				this.img2 = new Image();
 			}
 			
 			function getMousePos(canvas, evt) {
@@ -146,6 +149,7 @@
 				pawns[0].x = 50;
 				pawns[0].y = 50;
 				pawns[0].img.src = "./data/images/hipsterR.png"; // Player pawn, faces right initially
+				pawns[0].img2.src = "./data/images/hipsterL.png";
 				for (var i = 1; i < npawns; i++) {
 					pawns[i] = new pawn;
 					pawns[i].x = (Math.random() * 1000) % 700 + 50;
@@ -153,7 +157,11 @@
 					pawns[i].nx = pawnspeed * ((Math.random() % 50 > 0.5) ? -1 : 1);
 					pawns[i].ny = pawnspeed * ((Math.random() % 50 > 0.5) ? -1 : 1);
 					pawns[i].img.src = "./data/images/zombieR0.png";
+					pawns[i].img2.src = "./data/images/zombieL0.png";
 					waitforImg(pawns[i].img);
+					waitforImg(pawns[i].img2);
+
+					zDirections[i] = "right";
 				}				
 				// Start game
 				interval = setInterval(move, 0);
@@ -209,19 +217,23 @@
 			//	canvas.removeEventListener('click', gamescreen, false);				
 			//	canvas.addEventListener('click', gamescreen, false);
 
-				socket.emit('loss', true);					
+				socket.emit('loss', true);
 			}
 			function move () {
+				var p, t;
+				
 				// Load draw background
 				context.drawImage(bgimage, 0, 0);
-				var p, t;
+				
 				// Move player one block down path
 				p = pawns[0];
 				if (p.x != play.x) {
-					if (p.x < play.x) {
+					if (p.x < play.x) { // going rightward
 						p.x += playerspeed;
-					} else if (p.x > play.x) {
+						hDirection = "right";
+					} else if (p.x > play.x) { // going leftward
 						p.x -= playerspeed;
+						hDirection = "left";
 					}
 				}
 				if (p.y != play.y) {
@@ -239,10 +251,15 @@
 					winscreen();
 					return;
 				}
+
+                // draw hipster in correct direction.
+                if (hDirection == 'right')
+				    context.drawImage(pawns[0].img, pawns[0].x, pawns[0].y);
+			    else if (hDirection == 'left')
+				    context.drawImage(pawns[0].img2, pawns[0].x, pawns[0].y);
 				//pawns[0].x = p.x; pawns[0].y = p.y;
-				context.drawImage(pawns[0].img, pawns[0].x, pawns[0].y);
 				
-				for (var i = 1; i < pawns.length; i++) {
+				for (var i = 1; i < npawns; i++) {
 					t = pawns[i];
 					// Checks for collisions
 					var dist = Math.sqrt(Math.pow(p.x - t.x, 2) + Math.pow(p.y - t.y, 2));
@@ -276,12 +293,18 @@
 					
 						/* Chase Player */
 						if (t.x != p.x) {
-							if (t.x < p.x) t.x += pawnspeed;
-							else if (t.x > p.x) t.x -= pawnspeed;
+							if (t.x < p.x) { // rightward
+							    t.x += pawnspeed;
+							    zDirections[i] = "right";
+						    }
+							else if (t.x > p.x) { // leftward
+							    t.x -= pawnspeed;
+							    zDirections[i] = "left";
+							}
 						}
 						if (t.y != p.y) {
-							if (t.y < p.y) t.y += pawnspeed;
-							else if (t.y > p.y) t.y -= pawnspeed;
+							if (t.y < p.y) t.y += pawnspeed; // upward
+							else if (t.y > p.y) t.y -= pawnspeed; // downward
 						}
 
 						/* Notice no bounds checking here as we are following
@@ -305,9 +328,13 @@
 						/* Walk to new location */
 						t.x += t.nx; t.y += t.ny;
 					}
+					// draw zombie with proper direction.
+                    if (zDirections[i] == 'right')
+					    context.drawImage(pawns[i].img, pawns[i].x, pawns[i].y);
+			        else if (zDirections[i] == 'left')
+					    context.drawImage(pawns[i].img2, pawns[i].x, pawns[i].y);
 					//pawns[i].x = t.x; pawns[i].y = t.y;
 					//pawns[i].nx = t.nx; pawns[i].ny = t.ny;
-					context.drawImage(pawns[i].img, pawns[i].x, pawns[i].y);
 				}
 			}
 		</script>		
